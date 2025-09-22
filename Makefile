@@ -19,7 +19,7 @@ all: build-all
 build: fmt vet
 	@mkdir -p $(BIN_DIR)
 	@echo "Building $(BIN) for $(OS)/$(ARCH)..."
-	@OS=$(OS) ARCH=$(ARCH) CGO_ENABLED=$(CGO_ENABLED) \
+	@GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=$(CGO_ENABLED) \
 		go build -o $(BIN) .
 	@echo "OK -> $(BIN)"
 
@@ -33,15 +33,15 @@ build-all: fmt vet
 	@set -e; \
 	for plat in $(PLATFORMS); do \
 	  os=$${plat%/*}; arch=$${plat#*/}; \
-	  outdir="$(BIN_DIR)/$${os}-$${arch}"; \
-	  mkdir -p "$$outdir"; \
-	  bin="$(PROJECT)"; \
-	  if [ "$$os" = "windows" ]; then bin="$(PROJECT).exe"; fi; \
-	  echo "Building $$outdir/$$bin ..."; \
+	  suffix="$$os-$$arch"; \
+	  bin_name="$(PROJECT)-$$suffix"; \
+	  if [ "$$os" = "windows" ]; then bin_name="$$bin_name.exe"; fi; \
+	  out="$(BIN_DIR)/$$bin_name"; \
+	  echo "Building $$out ..."; \
 	  GOOS="$$os" GOARCH="$$arch" CGO_ENABLED=$(CGO_ENABLED) \
-	    go build -o "$$outdir/$$bin" .; \
+	    go build -o "$$out" .; \
 	 done; \
-	 echo "All done -> $(BIN_DIR)/*"
+	 echo "All done -> $(BIN_DIR)"
 
 fmt:
 	@go fmt ./...
